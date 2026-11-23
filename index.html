@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bon Proyek — Dashboard Direktur</title>
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src https://dkpgmchugxretivziawy.supabase.co; img-src 'self' data:; style-src 'self'; script-src 'self'; form-action 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests">
+  <link rel="stylesheet" href="dashboard.css">
+  <script src="config.js" defer></script>
+  <script src="access.js" defer></script>
+  <script src="dashboard.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./"><span class="brand-icon" aria-hidden="true">▥</span> Bon Proyek <span class="top-section">/ Pelaporan</span></a>
+    <div class="header-access"><span>Akses baca</span><button id="logout" class="logout" hidden>Keluar</button></div>
+  </header>
+<section id="access-gate" class="access-gate" aria-labelledby="access-title">
+    <div class="access-card"><span class="access-eyebrow">BON PROYEK · LAPORAN MANAJEMEN</span>
+    <h1 id="access-title">Pantau biaya.<br>Kenali selisihnya.</h1>
+    <p>Lihat ringkasan tagihan, pembayaran, dan transaksi yang memerlukan tindak lanjut.</p>
+    <form id="access-form"><label for="access-code">Kode akses dashboard</label>
+    <input id="access-code" type="password" autocomplete="current-password" required maxlength="256" placeholder="Masukkan kode dari pengelola">
+    <button id="access-submit" type="submit">Buka dashboard</button>
+    <p id="access-message" class="access-message" role="status" aria-live="polite"></p></form>
+    <p class="access-note">Laporan ini hanya untuk pemantauan. Hubungi pengelola untuk koreksi atau pembaruan data.</p></div>
+  </section>
+  <main hidden id="dashboard" data-source="./" data-cloud="true">
+    <div class="page-heading">
+      <div>
+        <h1>Pantauan Biaya Proyek</h1>
+        <p>Laporan tagihan dan pembayaran proyek</p>
+      </div>
+      <div class="sync">
+        <span id="connection" data-state="waiting" role="status">Menghubungkan ke Google Sheets</span>
+        <small id="updated">Menunggu data tersimpan</small>
+      </div>
+    </div>
+    <p id="warning" class="warning" role="status" hidden></p>
+    <section class="filters" aria-label="Filter laporan">
+      <label>Proyek<select id="project"><option value="">Semua proyek</option></select></label>
+      <label>Kategori<select id="category"><option value="">Semua kategori</option></select></label>
+      <label>Dari tanggal tagihan<input id="from-date" type="date"></label>
+      <label>Sampai tanggal tagihan<input id="to-date" type="date"></label>
+      <button class="quiet" id="clear-filters">Reset filter</button>
+    </section>
+    <section class="metrics" aria-label="Ringkasan biaya">
+      <article class="billed-metric"><p>Nominal tagihan</p><strong id="total-billed">—</strong><small id="invoice-count"></small></article>
+      <article class="paid-metric"><p>Pembayaran tercatat</p><strong id="total-paid">—</strong><small id="payment-note"></small></article>
+      <article class="review-metric"><p>Perlu diperiksa</p><strong id="review-count">—</strong><small>Beda nominal atau referensi bermasalah</small></article>
+      <article class="pending-metric"><p>Belum ada pembayaran</p><strong id="pending-count">—</strong><small>Tagihan tanpa catatan pembayaran</small></article>
+    </section>
+    <div class="charts">
+      <section class="panel trend-panel">
+        <h2>Tren tagihan</h2>
+        <p class="subheading" id="trend-caption">Nominal tagihan per bulan</p>
+        <div class="plot">
+          <canvas id="trend" role="img" aria-label="Grafik tren nominal tagihan"></canvas>
+          <output class="plot-tooltip" id="trend-tip" hidden></output>
+        </div>
+      </section>
+      <section class="panel status-panel">
+        <h2>Status rekonsiliasi</h2>
+        <p class="subheading">Proporsi kasus sesuai filter</p>
+        <div id="status-chart" class="status-chart"></div>
+      </section>
+      <section class="panel category-panel">
+        <h2>Tagihan per kategori</h2>
+        <p class="subheading">Klik kategori pada grafik untuk memfilter laporan</p>
+        <div id="category-chart"></div>
+      </section>
+    </div>
+    <section class="panel cases">
+      <div class="case-heading">
+        <div><h2>Daftar rekonsiliasi</h2><p class="subheading">Telusuri catatan pembayaran berdasarkan ID tagihan.</p></div>
+        <label class="search-label">Cari<input id="search" type="search" placeholder="ID, kategori, atau keterangan"></label>
+      </div>
+      <div class="view-buttons" aria-label="Tampilan daftar">
+        <button id="needs-review" aria-pressed="true">Perlu tindak lanjut</button>
+        <button id="all-cases" aria-pressed="false">Semua kasus</button>
+      </div>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel rekonsiliasi">
+        <table>
+          <thead><tr><th scope="col">Referensi</th><th scope="col">Keterangan</th><th scope="col">Tagihan</th><th scope="col">Dibayar</th><th scope="col">Selisih</th><th scope="col">Status</th></tr></thead>
+          <tbody id="case-rows"></tbody>
+        </table>
+      </div>
+      <div class="pagination"><small id="page-label"></small><button class="quiet" id="previous">Sebelumnya</button><button class="quiet" id="next">Berikutnya</button></div>
+    </section>
+    <footer>Akses baca untuk manajemen. Data diperiksa otomatis setiap 15 detik selama halaman terbuka.</footer>
+  </main>
+</body>
+</html>
