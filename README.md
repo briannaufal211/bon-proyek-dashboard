@@ -48,7 +48,11 @@ Pemeriksaan pukul 22.13 WIB: 502 tagihan, 452 kasus, 432 Cocok, 19 Beda nominal,
 
 ## Contoh transaksi yang dapat ditelusuri
 
-Struk CORD bakso bihun menampilkan GRAND TOTAL Rp48.000, tunai Rp50.000, dan kembalian Rp2.000. Nominal tagihan yang benar untuk contoh ini Rp48.000. Pengguna telah menyimpannya sebagai INV0501 dengan keterangan konsumsi tim Proyek A dan kategori Lainnya. Pembacaan terbaru menemukan invoice Rp48.000 dan status Belum ada pembayaran. Ini berarti belum ditemukan catatan pembayaran dalam sumber, bukan bukti bahwa barang belum dibayar. Jika pembayaran sebenarnya telah dilakukan, operator mencatat Payment_ID unik, tanggal, Amount, dan Reference INV0501 setelah memeriksa bukti.
+**CORD** adalah kumpulan foto struk toko dan restoran di Indonesia yang dipublikasikan oleh NAVER CLOVA untuk riset. Foto struk dilengkapi penanda untuk bagian seperti nama barang, pajak, dan total. Proyek ini mengambil satu foto struk bakso bihun dari koleksi tersebut sebagai contoh uji. [Dataset CORD](https://github.com/clovaai/cord) · [Foto struk contoh](https://briannaufal211.github.io/bon-proyek-dashboard/unggah/sample.jpg)
+
+Saat operator memilih **Gunakan contoh CORD**, aplikasi online membaca tulisan pada foto dengan **Tesseract.js**. Proses ini disebut **OCR**. Aplikasi mengusulkan **Rp48.000** dari baris *Grand Total* sebagai nominal tagihan. Angka tunai Rp50.000 adalah uang yang diserahkan ke kasir, sedangkan Rp2.000 adalah kembalian. Operator memeriksa hasilnya sebelum menyimpan.
+
+Pengguna telah menyimpannya sebagai INV0501 dengan keterangan konsumsi tim Proyek A dan kategori Lainnya. Pembacaan terbaru menemukan invoice Rp48.000 dan status Belum ada pembayaran. Ini berarti belum ditemukan catatan pembayaran dalam sumber, bukan bukti bahwa barang belum dibayar. Jika pembayaran sebenarnya telah dilakukan, operator mencatat Payment_ID unik, tanggal, Amount, dan Reference INV0501 setelah memeriksa bukti.
 
 ## Cara direktur memakai dashboard
 
