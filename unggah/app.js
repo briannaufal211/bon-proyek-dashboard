@@ -3,6 +3,14 @@ const API='https://dkpgmchugxretivziawy.supabase.co/functions/v1/bon-operator';
 const el=id=>document.getElementById(id);let credential='',photo=null,worker=null,payload=null,requestId=null,busy=false,previewUrl=null;
 const pendingKey='bon-proyek-pending-upload-id';
 const put=(id,text)=>el(id).textContent=text;
+let nextReceiptTimer=null;
+const savedBanner=document.createElement('div');savedBanner.className='notice';savedBanner.hidden=true;savedBanner.setAttribute('role','status');savedBanner.setAttribute('aria-live','polite');el('workspace').prepend(savedBanner);
+const sourceLinks=document.createElement('nav');sourceLinks.className='notice actions';sourceLinks.setAttribute('aria-label','Buka sumber data');
+for(const [label,id] of [['Buka Tagihan','16vTiGt51obdCg3Sx3WEa5QYftHIb1MMgI5PAy4qZsvk'],['Buka Pembayaran','1yqCJTwX-_1JEHR9blXg5_Dvfvxz11JqSlUL2rcHZPAU']]){
+ const link=document.createElement('a');link.textContent=label;link.className='secondary';link.href=`https://docs.google.com/spreadsheets/d/${id}/edit`;link.target='_blank';link.rel='noopener noreferrer';sourceLinks.append(link);
+}
+savedBanner.after(sourceLinks);
+function cancelNextReceipt(){if(nextReceiptTimer!==null){clearTimeout(nextReceiptTimer);nextReceiptTimer=null;}}
 el('date').value=new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Jakarta'});
 async function api(url=API,options={}){
  const response=await fetch(url,{...options,headers:{...options.headers,'x-operator-code':credential},credentials:'omit',cache:'no-store',signal:AbortSignal.timeout(80000)});
@@ -11,7 +19,7 @@ async function api(url=API,options={}){
 function savedId(){try{return localStorage.getItem(pendingKey);}catch{return null;}}
 function remember(id){try{id?localStorage.setItem(pendingKey,id):localStorage.removeItem(pendingKey);}catch{}}
 function fieldLock(lock){for(const id of ['project','date','photo','amount','category','description','verified','sample','ocr'])el(id).disabled=lock;el('save').disabled=lock||!photo;}
-function lock(){credential='';el('workspace').hidden=true;el('gate').hidden=false;el('logout').hidden=true;el('code').value='';reset();}
+function lock(){credential='';el('workspace').hidden=true;el('gate').hidden=false;el('logout').hidden=true;el('code').value='';reset();savedBanner.hidden=true;savedBanner.textContent='';}
 el('logout').addEventListener('click',lock);
 el('login-form').addEventListener('submit',async event=>{
  event.preventDefault();el('login').disabled=true;put('login-message','Memeriksa akses…');
@@ -27,6 +35,7 @@ async function prepare(file){
  const scale=Math.min(1,1920/Math.max(bitmap.width,bitmap.height));const canvas=document.createElement('canvas');canvas.width=Math.round(bitmap.width*scale);canvas.height=Math.round(bitmap.height*scale);
  const ctx=canvas.getContext('2d');ctx.fillStyle='white';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close();
  photo=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.92));if(!photo||photo.size>4*1024*1024)throw Error('Foto masih terlalu besar setelah diproses.');
+ savedBanner.hidden=true;savedBanner.textContent='';
  if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=URL.createObjectURL(photo);el('preview').src=previewUrl;el('preview').hidden=false;el('photo-empty').hidden=true;
  el('ocr').disabled=false;el('save').disabled=false;el('amount').value='';el('verified').checked=false;put('suggestion','Total belum dibaca.');put('ocr-message','Foto siap. Jalankan OCR atau isi total dari foto secara manual.');put('ocr-text','Belum ada hasil.');
 }
@@ -52,8 +61,11 @@ async function readOcr(){
 }
 el('ocr').addEventListener('click',readOcr);
 function showResult(data){
+ cancelNextReceipt();
  if(data.state==='committed'){
   remember(null);el('resume').hidden=true;put('save-message',`${data.invoice} berhasil dicatat sebesar ${rupiah(data.amount)}. Dashboard akan membaca pembaruannya. Pembayaran belum dibuat.`);el('check').hidden=true;el('new').hidden=false;
+  savedBanner.textContent=`${data.invoice} berhasil dicatat sebesar ${rupiah(data.amount)}. Formulir siap untuk bon berikutnya. Pembayaran belum dibuat.`;savedBanner.hidden=false;
+  nextReceiptTimer=setTimeout(reset,2500);
  }else{put('save-message',data.message||'Penyimpanan belum terkonfirmasi. Periksa status, jangan unggah ulang bon yang sama.');el('check').hidden=false;el('new').hidden=true;}
 }
 async function checkStatus(){
@@ -71,7 +83,9 @@ el('save-form').addEventListener('submit',async event=>{
  finally{busy=false;}
 });
 function reset(){
+ cancelNextReceipt();
  photo=null;payload=null;requestId=null;busy=false;if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=null;el('preview').removeAttribute('src');el('preview').hidden=true;el('photo-empty').hidden=false;
  el('save-form').reset();el('photo').value='';fieldLock(false);el('ocr').disabled=true;el('save').disabled=true;el('new').hidden=true;el('check').hidden=true;put('save-message','');put('suggestion','Total belum dibaca.');put('ocr-text','Belum ada hasil.');put('ocr-message','Pilih foto untuk mulai membaca.');
+ if(!el('workspace').hidden)el('workspace').scrollIntoView({behavior:'smooth',block:'start'});
 }
 el('new').addEventListener('click',reset);
