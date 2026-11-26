@@ -1,0 +1,12 @@
+Bon Proyek routes
+
+Dashboard: https://briannaufal211.github.io/bon-proyek-dashboard/
+Receipt operator: https://briannaufal211.github.io/bon-proyek-dashboard/unggah/
+
+This repository contains only the static frontend and a public CORD sample. Server credentials and transaction records must never be committed here.
+
+The receipt app reads images locally with Tesseract.js, requires human verification, then submits a JPEG and verified invoice details to the protected Supabase bon-operator function. Confirmed invoices are appended to private Google Sheets and photos are stored in private Supabase storage. The dashboard uses a separate read-only function and refreshes every 15 seconds while open.
+
+At the owner's explicit request the operator uses the same access code as the dashboard. Anyone given that code can add invoices through the operator app.
+
+GitHub Pages publishes the main branch root. The November 25 deployment encountered a GitHub service outage; this documentation commit starts a fresh deployment instead of relying on its stalled rerun.
