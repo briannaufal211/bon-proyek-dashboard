@@ -2,6 +2,10 @@
 
 [Studi kasus lengkap](https://briannaufal211.github.io/personal-portfolio/project-cost-monitoring.html) · [Laporan manajerial PDF](https://briannaufal211.github.io/personal-portfolio/assets/project-cost/Laporan-Manajerial.pdf) · [Panduan Excel PDF](https://briannaufal211.github.io/personal-portfolio/assets/project-cost/Panduan-Excel.pdf)
 
+[Demo dashboard tanpa login](https://briannaufal211.github.io/personal-portfolio/assets/project-cost/demo/) · [Video dengan narasi bahasa Inggris](https://briannaufal211.github.io/personal-portfolio/project-cost-monitoring.html#demo) · [Bukti visual Power Query](https://briannaufal211.github.io/personal-portfolio/project-cost-monitoring.html#power-query)
+
+Demo publik memakai transaksi fiktif. Coba konfirmasi bon Rp48.000 dan catat pembayaran contoh untuk melihat perubahan status INV-DEMO-06.
+
 ## Ringkasan eksekutif
 
 Project Cost Monitoring & Invoice Reconciliation Automation adalah studi kasus independen untuk membantu Finance melihat tagihan, pembayaran, dan selisih dalam satu alur. Proyek terinspirasi kebutuhan bisnis yang dibahas dalam interview; bukan implementasi resmi perusahaan atau penggunaan data internal perusahaan. Dashboard dan aplikasi unggah bon sudah online. Data publik diperkaya untuk konteks biaya konstruksi.
