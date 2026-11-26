@@ -1,3 +1,5 @@
+import './config.js';
+import './access.js?v=20261126-sso1';
 const el = (id) => document.getElementById(id);
 const money = new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0, maximumFractionDigits: 2 });
 const number = new Intl.NumberFormat("id-ID");

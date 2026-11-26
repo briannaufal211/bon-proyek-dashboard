@@ -7,9 +7,7 @@
   <meta name="referrer" content="no-referrer">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src https://dkpgmchugxretivziawy.supabase.co; img-src 'self' data:; style-src 'self'; script-src 'self'; form-action 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests">
   <link rel="stylesheet" href="dashboard.css">
-  <script src="config.js" defer></script>
-  <script src="access.js" defer></script>
-  <script src="dashboard.js" defer></script>
+  <script src="dashboard.js?v=20261126-sso1" type="module"></script>
 </head>
 <body>
   <header class="topbar">
@@ -22,9 +20,10 @@
     <p>Lihat ringkasan tagihan, pembayaran, dan transaksi yang memerlukan tindak lanjut.</p>
     <form id="access-form"><label for="access-code">Kode akses dashboard</label>
     <input id="access-code" type="password" autocomplete="current-password" required maxlength="256" placeholder="Masukkan kode dari pengelola">
+    <label class="remember-device"><input id="access-remember" type="checkbox"><span>Ingat perangkat ini selama 7 hari</span></label>
     <button id="access-submit" type="submit">Buka dashboard</button>
     <p id="access-message" class="access-message" role="status" aria-live="polite"></p></form>
-    <p class="access-note">Laporan ini hanya untuk pemantauan. Hubungi pengelola untuk koreksi atau pembaruan data.</p></div>
+    <p class="access-note">Login berlaku juga untuk aplikasi unggah bon pada browser yang sama. Centang Ingat perangkat hanya pada perangkat pribadi Anda.</p></div>
   </section>
   <main hidden id="dashboard" data-source="./" data-cloud="true">
     <div class="page-heading">

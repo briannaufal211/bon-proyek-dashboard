@@ -111,6 +111,8 @@ footer { margin-top: 15px; font-size: 13px; }
   .pagination { flex-wrap: wrap; }
 }
 
+.remember-device { display:flex!important; align-items:flex-start; gap:10px; font-weight:400; }
+.remember-device input { width:18px!important; height:18px; flex:0 0 18px; margin-top:3px; }
 [hidden] { display: none !important; }
 body { min-width: 320px; }
 label, .upload-link, .sync span { font-size: 0.875rem; }

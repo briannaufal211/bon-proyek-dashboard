@@ -1,4 +1,5 @@
 import {rupiah,suggestTotal} from './ocr-utils.js';
+import {session} from '../session.js?v=20261126-sso1';
 const API='https://dkpgmchugxretivziawy.supabase.co/functions/v1/bon-operator';
 const el=id=>document.getElementById(id);let credential='',photo=null,worker=null,payload=null,requestId=null,busy=false,previewUrl=null;
 const pendingKey='bon-proyek-pending-upload-id';
@@ -13,18 +14,24 @@ savedBanner.after(sourceLinks);
 function cancelNextReceipt(){if(nextReceiptTimer!==null){clearTimeout(nextReceiptTimer);nextReceiptTimer=null;}}
 el('date').value=new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Jakarta'});
 async function api(url=API,options={}){
- const response=await fetch(url,{...options,headers:{...options.headers,'x-operator-code':credential},credentials:'omit',cache:'no-store',signal:AbortSignal.timeout(80000)});
- const data=await response.json().catch(()=>({}));if(!response.ok){const e=new Error(data.error||'Koneksi belum tersedia.');e.status=response.status;throw e;}return data;
+ const response=await fetch(url,{...options,headers:{...options.headers,Authorization:'Bearer '+session.getToken()},credentials:'omit',cache:'no-store',signal:AbortSignal.timeout(80000)});
+ const data=await response.json().catch(()=>({}));if(!response.ok){if(response.status===401)session.invalidate();const e=new Error(data.error||'Koneksi belum tersedia.');e.status=response.status;throw e;}return data;
 }
 function savedId(){try{return localStorage.getItem(pendingKey);}catch{return null;}}
 function remember(id){try{id?localStorage.setItem(pendingKey,id):localStorage.removeItem(pendingKey);}catch{}}
 function fieldLock(lock){for(const id of ['project','date','photo','amount','category','description','verified','sample','ocr'])el(id).disabled=lock;el('save').disabled=lock||!photo;}
 function lock(){credential='';el('workspace').hidden=true;el('gate').hidden=false;el('logout').hidden=true;el('code').value='';reset();savedBanner.hidden=true;savedBanner.textContent='';}
-el('logout').addEventListener('click',lock);
+el('logout').addEventListener('click',async()=>{try{await session.logout();lock();}catch{lock();put('login-message','Sudah keluar di perangkat ini. Penutupan sesi server belum dapat dikonfirmasi.');}});
+let restoring=false;
+async function unlock(){
+ await api(API+'?mode=session');credential=session.getToken();el('code').value='';el('gate').hidden=true;el('workspace').hidden=false;el('logout').hidden=false;put('login-message','');
+ const id=savedId();el('resume').hidden=!id;if(id){requestId=id;put('resume-text','Ada penyimpanan sebelumnya yang belum ditutup. Periksa status sebelum mencatat bon yang sama.');}
+}
+async function restore(){if(restoring||!el('workspace').hidden||!session.getToken())return;restoring=true;put('login-message','Memulihkan sesi login…');try{await unlock();}catch(e){put('login-message',e.message);}finally{restoring=false;}}
+document.addEventListener('bon-session-changed',event=>{if(event.detail.type==='signed-out')lock();else restore();});
 el('login-form').addEventListener('submit',async event=>{
  event.preventDefault();el('login').disabled=true;put('login-message','Memeriksa akses…');
- try{credential=el('code').value.trim();await api(API+'?mode=session');el('code').value='';el('gate').hidden=true;el('workspace').hidden=false;el('logout').hidden=false;put('login-message','');
- const id=savedId();if(id){requestId=id;el('resume').hidden=false;put('resume-text','Ada penyimpanan sebelumnya yang belum ditutup. Periksa status sebelum mencatat bon yang sama.');}
+ try{await session.login(el('code').value.trim(),el('remember-device').checked);await unlock();
  }catch(e){credential='';put('login-message',e.message);}finally{el('login').disabled=false;}
 });
 async function prepare(file){
@@ -89,3 +96,4 @@ function reset(){
  if(!el('workspace').hidden)el('workspace').scrollIntoView({behavior:'smooth',block:'start'});
 }
 el('new').addEventListener('click',reset);
+restore();
