@@ -1,15 +1,39 @@
 import './config.js';
-import './access.js?v=20261126-sso1';
+import './access.js?v=20261126-en1';
 const el = (id) => document.getElementById(id);
-const money = new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0, maximumFractionDigits: 2 });
-const number = new Intl.NumberFormat("id-ID");
-const dateTime = new Intl.DateTimeFormat("id-ID", { dateStyle: "medium", timeStyle: "medium", timeZone: "Asia/Jakarta" });
+const money = new Intl.NumberFormat("en-GB", { style: "currency", currency: "IDR", minimumFractionDigits: 0, maximumFractionDigits: 2 });
+const number = new Intl.NumberFormat("en-GB");
+const dateTime = new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "medium", timeZone: "Asia/Jakarta" });
 const statuses = {
   "Cocok": ["matched", "#208376"],
   "Beda nominal": ["variance", "#d18b46"],
   "Belum ada pembayaran": ["pending", "#7890b3"],
   "Periksa referensi": ["check-ref", "#bd685c"],
 };
+const categoryNames = {
+  "Material konstruksi": "Construction materials",
+  "BBM dan pelumas": "Fuel and lubricants",
+  "Sewa alat": "Equipment rental",
+  "Servis kendaraan dan alat": "Vehicle and equipment servicing",
+  "Angkutan dan logistik": "Transport and logistics",
+  "Subkontrak pekerjaan": "Subcontracted work",
+  "K3 dan APD": "Safety and protective equipment",
+  "Operasional lokasi": "Site operations",
+  "Survei dan pengujian": "Surveying and testing",
+  "Lainnya": "Other",
+  "Belum dikategorikan": "Uncategorized",
+  "Material": "Materials",
+  "Servis": "Servicing",
+  "Logistik": "Logistics",
+  "Operasional": "Site operations"
+};
+const statusNames = {
+  "Cocok": "Matched",
+  "Beda nominal": "Amount difference",
+  "Belum ada pembayaran": "No payment recorded",
+  "Periksa referensi": "Check reference"
+};
+const categoryName = value => categoryNames[value] ?? value;
 const pageSize = 10;
 let snapshot = null;
 let page = 0;
@@ -27,7 +51,7 @@ function element(tag, text, className) {
 function drawCategories(target, entries, active) {
   const max = Math.max(0, ...entries.map(([, value]) => value));
   if (!entries.length) {
-    target.replaceChildren(element("p", "Tidak ada tagihan pada periode ini."));
+    target.replaceChildren(element("p", "There are no invoices in this period."));
     return;
   }
   target.replaceChildren(...entries.map(([label, value]) => {
@@ -39,7 +63,7 @@ function drawCategories(target, entries, active) {
       resetPage();
     });
     const labels = element("span", undefined, "bar-label");
-    labels.append(element("span", label), element("strong", money.format(value)));
+    labels.append(element("span", categoryName(label)), element("strong", money.format(value)));
     const track = element("span", undefined, "bar-track");
     track.setAttribute("aria-hidden", "true");
     const fill = element("span", undefined, "bar-fill");
@@ -54,7 +78,7 @@ function drawStatus(counts) {
   const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
   const donut = element("div", undefined, "donut");
   const inner = element("div", undefined, "donut-inner");
-  inner.append(element("strong", number.format(total)), element("small", "kasus"));
+  inner.append(element("strong", number.format(total)), element("small", "cases"));
   donut.append(inner);
   const legend = element("ul", undefined, "legend");
   const slices = [];
@@ -65,7 +89,7 @@ function drawStatus(counts) {
     const dot = element("span");
     dot.style.background = color;
     dot.setAttribute("aria-hidden", "true");
-    entry.append(dot, element("span", label), element("strong", number.format(count)));
+    entry.append(dot, element("span", statusNames[label]), element("strong", number.format(count)));
     legend.append(entry);
     if (count) {
       const end = start + count / total * 100;
@@ -94,16 +118,16 @@ function buildTrend(invoices) {
       const year = month.slice(0, 4);
       annual.set(year, (annual.get(year) || 0) + total);
     }
-    return [...annual].sort().map(([key, value]) => ({ label: key, value, length: "tahun" }));
+    return [...annual].sort().map(([key, value]) => ({ label: key, value, length: "year" }));
   }
-  const formatter = new Intl.DateTimeFormat("id-ID", { month: "short", year: "2-digit", timeZone: "UTC" });
+  const formatter = new Intl.DateTimeFormat("en-GB", { month: "short", year: "2-digit", timeZone: "UTC" });
   const first = index(keys[0]);
   return Array.from({ length: span }, (_, offset) => {
     const month = first + offset;
     const year = Math.floor(month / 12);
     const number = month % 12;
     const key = `${year}-${String(number + 1).padStart(2, "0")}`;
-    return { label: formatter.format(new Date(Date.UTC(year, number, 1))), value: monthly.get(key) || 0, length: "bulan" };
+    return { label: formatter.format(new Date(Date.UTC(year, number, 1))), value: monthly.get(key) || 0, length: "month" };
   });
 }
 
@@ -122,9 +146,9 @@ function drawTrend() {
   trendPoints = [];
   el("trend-tip").hidden = true;
   if (!points.length) {
-    ctx.fillText("Tidak ada tagihan bertanggal pada pilihan ini.", 4, 22);
-    canvas.setAttribute("aria-label", "Tidak ada tagihan bertanggal pada pilihan ini.");
-    el("trend-caption").textContent = "Nominal tagihan per bulan";
+    ctx.fillText("There are no dated invoices for this selection.", 4, 22);
+    canvas.setAttribute("aria-label", "There are no dated invoices for this selection.");
+    el("trend-caption").textContent = "Monthly billed costs";
     return;
   }
   const left = 54, right = width - 18, top = 10, bottom = height - 25;
@@ -132,8 +156,8 @@ function drawTrend() {
   const stepBase = 10 ** Math.floor(Math.log10(Math.max(peak / 4, 1)));
   const step = ([1, 2, 2.5, 5, 10].find((candidate) => candidate * stepBase >= peak / 4) || 10) * stepBase;
   const max = step * 4;
-  const short = new Intl.NumberFormat("id-ID", { notation: "compact", maximumFractionDigits: 1 });
-  el("trend-caption").textContent = `Nominal tagihan per ${points[0].length} · IDR`;
+  const short = new Intl.NumberFormat("en-GB", { notation: "compact", maximumFractionDigits: 1 });
+  el("trend-caption").textContent = `Billed costs per ${points[0].length} · IDR`;
   for (let i = 0; i <= 4; i++) {
     const y = top + (bottom - top) * i / 4;
     ctx.beginPath();
@@ -180,19 +204,19 @@ function drawTrend() {
     ctx.fillText(point.label, point.x, bottom + 18);
   }
   const highest = points.reduce((best, point) => point.value > best.value ? point : best);
-  canvas.setAttribute("aria-label", `Tren tagihan per ${points[0].length}. Dari ${first.label} hingga ${last.label}. Tertinggi ${highest.label}, ${money.format(highest.value)}.`);
+  canvas.setAttribute("aria-label", `Billed costs per ${points[0].length}. From ${first.label} to ${last.label}. Peak: ${highest.label}, ${money.format(highest.value)}.`);
 }
 
 function drawRows(cases, invoiceById) {
-  const term = el("search").value.trim().toLocaleLowerCase("id-ID");
+  const term = el("search").value.trim().toLocaleLowerCase("en-GB");
   const filtered = cases.filter((entry) => {
     if (reviewOnly && entry.status === "Cocok") return false;
     const searchable = [...entry.invoiceIds, ...entry.missing, ...entry.paymentIds];
     for (const id of entry.invoiceIds) {
       const invoice = invoiceById.get(id);
-      searchable.push(invoice.category, invoice.detail, invoice.project);
+      searchable.push(invoice.category, categoryName(invoice.category), invoice.detail, invoice.project, statusNames[entry.status]);
     }
-    return !term || searchable.join(" ").toLocaleLowerCase("id-ID").includes(term);
+    return !term || searchable.join(" ").toLocaleLowerCase("en-GB").includes(term);
   });
   page = Math.min(page, Math.max(0, Math.ceil(filtered.length / pageSize) - 1));
   const start = page * pageSize;
@@ -201,14 +225,14 @@ function drawRows(cases, invoiceById) {
     const row = element("tr");
     const reference = element("td", entry.invoiceIds.join(", ") || "—");
     if (entry.paymentIds.length) reference.append(element("small", entry.paymentIds.join(", ")));
-    if (entry.missing.length) reference.append(element("small", `ID tidak ditemukan: ${entry.missing.join(", ")}`));
+    if (entry.missing.length) reference.append(element("small", `Missing invoice IDs: ${entry.missing.join(", ")}`));
     const detail = element("td");
     for (const id of entry.invoiceIds) {
       const invoice = invoiceById.get(id);
-      detail.append(element("div", invoice.detail || invoice.category));
+      detail.append(element("div", invoice.detail || categoryName(invoice.category)));
     }
     const status = element("td");
-    status.append(element("span", entry.status, `status-pill ${statuses[entry.status][0]}`));
+    status.append(element("span", statusNames[entry.status], `status-pill ${statuses[entry.status][0]}`));
     row.append(
       reference, detail,
       element("td", money.format(entry.billed), "amount-cell"),
@@ -220,14 +244,14 @@ function drawRows(cases, invoiceById) {
   });
   if (!rows.length) {
     const row = element("tr");
-    const empty = element("td", "Tidak ada kasus yang sesuai.");
+    const empty = element("td", "No cases match your filters.");
     empty.colSpan = 6;
     row.append(empty);
     rows.push(row);
   }
   el("case-rows").replaceChildren(...rows);
   el("page-label").textContent = filtered.length
-    ? `${start + 1}–${start + visible.length} dari ${number.format(filtered.length)} kasus` : "0 kasus";
+    ? `${start + 1}–${start + visible.length} of ${number.format(filtered.length)} cases` : "0 cases";
   el("previous").disabled = page === 0;
   el("next").disabled = start + pageSize >= filtered.length;
 }
@@ -258,11 +282,11 @@ function render() {
   const counts = Object.fromEntries(Object.keys(statuses).map((status) => [status, 0]));
   for (const entry of cases) counts[entry.status]++;
   el("total-billed").textContent = money.format(total);
-  el("invoice-count").textContent = `${number.format(selected.length)} tagihan`;
+  el("invoice-count").textContent = `${number.format(selected.length)} invoices`;
   el("total-paid").textContent = money.format(whollySelected.reduce((sum, entry) => sum + Number(entry.paid), 0));
   el("payment-note").textContent = cases.length > whollySelected.length
-    ? "Pembayaran lintas filter hanya tampil di daftar"
-    : el("dashboard").dataset.cloud === "true" ? "Berdasarkan Google Sheets Pembayaran" : "Berdasarkan catatan pada payments-uji.xlsx";
+    ? "Payments across filter boundaries are shown in the case list"
+    : el("dashboard").dataset.cloud === "true" ? "From the Payments spreadsheet" : "From records in payments-uji.xlsx";
   el("review-count").textContent = number.format(counts["Beda nominal"] + counts["Periksa referensi"]);
   el("pending-count").textContent = number.format(counts["Belum ada pembayaran"]);
   drawCategories(el("category-chart"), [...values].sort((a, b) => b[1] - a[1]), category);
@@ -279,7 +303,7 @@ function updateOptions(field, initial) {
   const placeholder = element("option", initial);
   placeholder.value = "";
   const options = values.map((value) => {
-    const option = element("option", value);
+    const option = element("option", field === "category" ? categoryName(value) : value);
     option.value = value;
     return option;
   });
@@ -291,7 +315,7 @@ function connection(message) {
   const state = el("connection");
   state.dataset.state = message ? "stale" : "live";
   const cloud = el("dashboard").dataset.cloud === "true";
-  state.textContent = message ? "Menunggu pembaruan" : cloud ? "Terhubung ke Google Sheets" : "Terhubung ke Excel";
+  state.textContent = message ? "Waiting for an update" : cloud ? "Connected to Google Sheets" : "Connected to Excel";
   el("warning").hidden = !message;
   el("warning").textContent = message || "";
 }
@@ -308,15 +332,15 @@ async function poll() {
     if (!window.bonDashboard.isUnlocked()) return;
     if (data.revision !== snapshot?.revision) {
       snapshot = data;
-      updateOptions("project", "Semua proyek");
-      updateOptions("category", "Semua kategori");
+      updateOptions("project", "All projects");
+      updateOptions("category", "All categories");
       render();
     }
-    el("updated").textContent = `Data diperiksa ${dateTime.format(new Date(data.checkedAt || data.updatedAt))} WIB`;
-    connection(data.warning || null);
+    el("updated").textContent = `Last checked ${dateTime.format(new Date(data.checkedAt || data.updatedAt))} WIB`;
+    connection(data.warning ? "Google Sheets is temporarily unavailable. Showing the last available data." : null);
   } catch (error) {
     if (error.status === 401 || error.status === 429) window.bonDashboard.lock(error.message);
-    else connection("Pembaruan belum tersedia. Menampilkan data terakhir yang berhasil dibaca.");
+    else connection("The latest refresh failed. Showing the last available data.");
   } finally {
     polling = false;
     pollTimer = window.setTimeout(poll, window.BON_DASHBOARD_CONFIG.refreshMs);

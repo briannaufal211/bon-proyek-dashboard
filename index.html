@@ -1,93 +1,93 @@
 <!doctype html>
-<html lang="id">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Bon Proyek — Dashboard Direktur</title>
+  <title>Project Receipts | Finance Dashboard</title>
   <meta name="referrer" content="no-referrer">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src https://dkpgmchugxretivziawy.supabase.co; img-src 'self' data:; style-src 'self'; script-src 'self'; form-action 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests">
-  <link rel="stylesheet" href="dashboard.css?v=20261126-sso1">
-  <script src="dashboard.js?v=20261126-sso1" type="module"></script>
+  <link rel="stylesheet" href="dashboard.css?v=20261126-en1">
+  <script src="dashboard.js?v=20261126-en1" type="module"></script>
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="./?v=20261126-sso1"><span class="brand-icon" aria-hidden="true">▥</span> Bon Proyek <span class="top-section">/ Pelaporan</span></a>
-    <div class="header-access"><span>Akses baca</span><button id="logout" class="logout" hidden>Keluar</button></div>
+    <a class="brand" href="./?v=20261126-en1"><span class="brand-icon" aria-hidden="true">▥</span> Project Receipts <span class="top-section">/ Reporting</span></a>
+    <div class="header-access"><span>Read-only</span><button id="logout" class="logout" hidden>Sign out</button></div>
   </header>
 <section id="access-gate" class="access-gate" aria-labelledby="access-title">
-    <div class="access-card"><span class="access-eyebrow">BON PROYEK · LAPORAN MANAJEMEN</span>
-    <h1 id="access-title">Pantau biaya.<br>Kenali selisihnya.</h1>
-    <p>Lihat ringkasan tagihan, pembayaran, dan transaksi yang memerlukan tindak lanjut.</p>
-    <form id="access-form"><label for="access-code">Kode akses dashboard</label>
-    <input id="access-code" type="password" autocomplete="current-password" required maxlength="256" placeholder="Masukkan kode dari pengelola">
-    <label class="remember-device"><input id="access-remember" type="checkbox"><span>Ingat perangkat ini selama 7 hari</span></label>
-    <button id="access-submit" type="submit">Buka dashboard</button>
+    <div class="access-card"><span class="access-eyebrow">PROJECT RECEIPTS · MANAGEMENT REPORTING</span>
+    <h1 id="access-title">Monitor project costs.<br>Investigate discrepancies.</h1>
+    <p>See billed costs, recorded payments, and cases that require follow-up.</p>
+    <form id="access-form"><label for="access-code">Dashboard access code</label>
+    <input id="access-code" type="password" autocomplete="current-password" required maxlength="256" placeholder="Enter the access code provided by the operator">
+    <label class="remember-device"><input id="access-remember" type="checkbox"><span>Remember this device for 7 days</span></label>
+    <button id="access-submit" type="submit">Open dashboard</button>
     <p id="access-message" class="access-message" role="status" aria-live="polite"></p></form>
-    <p class="access-note">Login berlaku juga untuk aplikasi unggah bon pada browser yang sama. Centang Ingat perangkat hanya pada perangkat pribadi Anda.</p></div>
+    <p class="access-note">This sign-in also unlocks the receipt upload app in the same browser. Use Remember this device on a personal device.</p></div>
   </section>
   <main hidden id="dashboard" data-source="./" data-cloud="true">
     <div class="page-heading">
       <div>
-        <h1>Pantauan Biaya Proyek</h1>
-        <p>Laporan tagihan dan pembayaran proyek</p>
+        <h1>Project Cost Overview</h1>
+        <p>Project invoices and recorded payments</p>
       </div>
       <div class="sync">
-        <span id="connection" data-state="waiting" role="status">Menghubungkan ke Google Sheets</span>
-        <small id="updated">Menunggu data tersimpan</small>
+        <span id="connection" data-state="waiting" role="status">Connecting to Google Sheets</span>
+        <small id="updated">Waiting for the first data check</small>
       </div>
     </div>
     <p id="warning" class="warning" role="status" hidden></p>
-    <section class="filters" aria-label="Filter laporan">
-      <label>Proyek<select id="project"><option value="">Semua proyek</option></select></label>
-      <label>Kategori<select id="category"><option value="">Semua kategori</option></select></label>
-      <label>Dari tanggal tagihan<input id="from-date" type="date"></label>
-      <label>Sampai tanggal tagihan<input id="to-date" type="date"></label>
+    <section class="filters" aria-label="Report filters">
+      <label>Project<select id="project"><option value="">All projects</option></select></label>
+      <label>Category<select id="category"><option value="">All categories</option></select></label>
+      <label>Invoice date from<input id="from-date" type="date"></label>
+      <label>Invoice date to<input id="to-date" type="date"></label>
       <button class="quiet" id="clear-filters">Reset filter</button>
     </section>
-    <section class="metrics" aria-label="Ringkasan biaya">
-      <article class="billed-metric"><p>Nominal tagihan</p><strong id="total-billed">—</strong><small id="invoice-count"></small></article>
-      <article class="paid-metric"><p>Pembayaran tercatat</p><strong id="total-paid">—</strong><small id="payment-note"></small></article>
-      <article class="review-metric"><p>Perlu diperiksa</p><strong id="review-count">—</strong><small>Beda nominal atau referensi bermasalah</small></article>
-      <article class="pending-metric"><p>Belum ada pembayaran</p><strong id="pending-count">—</strong><small>Tagihan tanpa catatan pembayaran</small></article>
+    <section class="metrics" aria-label="Cost summary">
+      <article class="billed-metric"><p>Total billed</p><strong id="total-billed">—</strong><small id="invoice-count"></small></article>
+      <article class="paid-metric"><p>Payments recorded</p><strong id="total-paid">—</strong><small id="payment-note"></small></article>
+      <article class="review-metric"><p>Needs review</p><strong id="review-count">—</strong><small>Amount differences or reference issues</small></article>
+      <article class="pending-metric"><p>No payment recorded</p><strong id="pending-count">—</strong><small>Invoices without a payment record</small></article>
     </section>
     <div class="charts">
       <section class="panel trend-panel">
-        <h2>Tren tagihan</h2>
-        <p class="subheading" id="trend-caption">Nominal tagihan per bulan</p>
+        <h2>Billed costs over time</h2>
+        <p class="subheading" id="trend-caption">Monthly billed costs</p>
         <div class="plot">
-          <canvas id="trend" role="img" aria-label="Grafik tren nominal tagihan"></canvas>
+          <canvas id="trend" role="img" aria-label="Billed cost trend chart"></canvas>
           <output class="plot-tooltip" id="trend-tip" hidden></output>
         </div>
       </section>
       <section class="panel status-panel">
-        <h2>Status rekonsiliasi</h2>
-        <p class="subheading">Proporsi kasus sesuai filter</p>
+        <h2>Reconciliation status</h2>
+        <p class="subheading">Cases within the selected filters</p>
         <div id="status-chart" class="status-chart"></div>
       </section>
       <section class="panel category-panel">
-        <h2>Tagihan per kategori</h2>
-        <p class="subheading">Klik kategori pada grafik untuk memfilter laporan</p>
+        <h2>Billed costs by category</h2>
+        <p class="subheading">Select a category in the chart to filter the report</p>
         <div id="category-chart"></div>
       </section>
     </div>
     <section class="panel cases">
       <div class="case-heading">
-        <div><h2>Daftar rekonsiliasi</h2><p class="subheading">Telusuri catatan pembayaran berdasarkan ID tagihan.</p></div>
-        <label class="search-label">Cari<input id="search" type="search" placeholder="ID, kategori, atau keterangan"></label>
+        <div><h2>Reconciliation details</h2><p class="subheading">Look up payment records by invoice ID.</p></div>
+        <label class="search-label">Search<input id="search" type="search" placeholder="ID, category, or description"></label>
       </div>
-      <div class="view-buttons" aria-label="Tampilan daftar">
-        <button id="needs-review" aria-pressed="true">Perlu tindak lanjut</button>
-        <button id="all-cases" aria-pressed="false">Semua kasus</button>
+      <div class="view-buttons" aria-label="Case view">
+        <button id="needs-review" aria-pressed="true">Needs follow-up</button>
+        <button id="all-cases" aria-pressed="false">All cases</button>
       </div>
-      <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel rekonsiliasi">
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Reconciliation table">
         <table>
-          <thead><tr><th scope="col">Referensi</th><th scope="col">Keterangan</th><th scope="col">Tagihan</th><th scope="col">Dibayar</th><th scope="col">Selisih</th><th scope="col">Status</th></tr></thead>
+          <thead><tr><th scope="col">Reference</th><th scope="col">Description</th><th scope="col">Billed</th><th scope="col">Paid</th><th scope="col">Difference</th><th scope="col">Status</th></tr></thead>
           <tbody id="case-rows"></tbody>
         </table>
       </div>
-      <div class="pagination"><small id="page-label"></small><button class="quiet" id="previous">Sebelumnya</button><button class="quiet" id="next">Berikutnya</button></div>
+      <div class="pagination"><small id="page-label"></small><button class="quiet" id="previous">Previous</button><button class="quiet" id="next">Next</button></div>
     </section>
-    <footer>Akses baca untuk manajemen. Data diperiksa otomatis setiap 15 detik selama halaman terbuka.</footer>
+    <footer>Read-only management view. The dashboard checks for updates every 15 seconds while open.</footer>
   </main>
 </body>
 </html>
