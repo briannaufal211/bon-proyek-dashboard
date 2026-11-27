@@ -34,6 +34,70 @@ const statusNames = {
   "Periksa referensi": "Check reference"
 };
 const categoryName = value => categoryNames[value] ?? value;
+const descriptionTerms = {
+  "Pembelian semen untuk pengecoran lantai": "Cement for concrete floor pouring",
+  "Biaya listrik sementara untuk kantor proyek": "Temporary electricity for the site office",
+  "Pembayaran jasa penggalian saluran proyek": "Drainage trench excavation services",
+  "Servis berkala kendaraan operasional proyek": "Scheduled service for site vehicles",
+  "Pengisian solar untuk genset di lokasi proyek": "Diesel for the site generator",
+  "Pengujian kepadatan tanah timbunan": "Fill soil density testing",
+  "Pembelian helm dan rompi keselamatan": "Safety helmets and vests",
+  "Jasa pengiriman perlengkapan dari gudang ke proyek": "Equipment delivery from warehouse to site",
+  "Sewa ekskavator untuk pekerjaan galian": "Excavator rental for earthworks",
+  "Biaya mobilisasi alat berat ke lokasi proyek": "Heavy equipment mobilization to site",
+  "Sewa perancah untuk pekerjaan struktur": "Scaffold rental for structural work",
+  "Pembelian perlengkapan kebersihan lokasi kerja": "Site cleaning supplies",
+  "Pembayaran jasa pemasangan pipa drainase": "Drainage pipe installation services",
+  "Penggantian filter oli dan suku cadang genset": "Generator oil filter and spare parts replacement",
+  "Pembelian pasir dan batu split untuk pekerjaan beton": "Sand and crushed stone for concrete work",
+  "Pembelian pelumas untuk perawatan alat berat": "Lubricants for heavy equipment maintenance",
+  "Jasa pengukuran elevasi dan pematokan area kerja": "Elevation survey and site staking",
+  "Pembelian sarung tangan dan sepatu keselamatan": "Work gloves and safety footwear",
+  "Pembayaran jasa pembesian dan pemasangan bekisting": "Rebar installation and formwork services",
+  "Pembelian pipa PVC dan sambungan untuk saluran drainase": "PVC pipes and fittings for drainage",
+  "Pembelian solar untuk dump truck proyek": "Diesel for site dump trucks",
+  "Pengujian kuat tekan sampel beton": "Concrete sample compression testing",
+  "Pembelian rambu keselamatan untuk area kerja": "Safety signs for the work area",
+  "Ongkos angkut material dari pemasok ke lokasi": "Material haulage from supplier to site",
+  "Sewa alat pemadat untuk penyiapan lahan": "Compactor rental for site preparation",
+  "Pembelian air minum untuk kru lapangan": "Drinking water for the site crew",
+  "Perbaikan sistem hidrolik alat berat": "Heavy equipment hydraulic system repair",
+  "Pembelian besi tulangan untuk pekerjaan struktur": "Rebar for structural work",
+  "Pembelian di J.CO, PROYEK-A": "J.CO purchase, PROYEK-A",
+  "Konsumsi tim Proyek A — pembelian bakso bihun": "Project A team meal — meatballs with rice vermicelli",
+  "Bon proyek:": "Project receipt:",
+  "Total tertera pada struk": "Receipt total",
+  "batang pipa + set sambungan": "pipe length and fittings set",
+  "paket jasa dan komponen": "service and parts package",
+  "set filter dan suku cadang": "filter and spare parts set",
+  "perjalanan lowbed": "low-bed trailer trip",
+  "hari tim ukur": "survey crew-day",
+  "meter saluran": "metre of drainage",
+  "benda uji": "test specimen",
+  "titik uji": "test point",
+  "set APD": "PPE set",
+  "set-bulan": "set-month",
+  "kendaraan": "vehicles",
+  "perjalanan": "trips",
+  "batang": "lengths",
+  "minggu": "weeks",
+  "meter": "metres",
+  "paket": "packages",
+  "liter": "litres",
+  "hari": "days",
+  "jam": "hours",
+  "dus": "boxes",
+  "zak": "bags",
+  "rit": "trips"
+};
+function displayDescription(value) {
+  if (!value) return "";
+  const translated = Object.entries(descriptionTerms).reduce((text, [from, to]) => {
+    const escaped = from.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return text.replace(new RegExp("\\b" + escaped + (/\w$/.test(from) ? "\\b" : ""), "g"), to);
+  }, value);
+  return translated.replace(/\bProyek ([A-Z])\b/g, "Project $1");
+}
 const pageSize = 10;
 let snapshot = null;
 let page = 0;
@@ -214,7 +278,7 @@ function drawRows(cases, invoiceById) {
     const searchable = [...entry.invoiceIds, ...entry.missing, ...entry.paymentIds];
     for (const id of entry.invoiceIds) {
       const invoice = invoiceById.get(id);
-      searchable.push(invoice.category, categoryName(invoice.category), invoice.detail, invoice.project, statusNames[entry.status]);
+      searchable.push(invoice.category, categoryName(invoice.category), invoice.detail, displayDescription(invoice.detail), invoice.project, statusNames[entry.status]);
     }
     return !term || searchable.join(" ").toLocaleLowerCase("en-GB").includes(term);
   });
@@ -229,7 +293,7 @@ function drawRows(cases, invoiceById) {
     const detail = element("td");
     for (const id of entry.invoiceIds) {
       const invoice = invoiceById.get(id);
-      detail.append(element("div", invoice.detail || categoryName(invoice.category)));
+      detail.append(element("div", displayDescription(invoice.detail) || categoryName(invoice.category)));
     }
     const status = element("td");
     status.append(element("span", statusNames[entry.status], `status-pill ${statuses[entry.status][0]}`));

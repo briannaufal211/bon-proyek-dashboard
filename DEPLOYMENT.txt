@@ -1,4 +1,4 @@
-Bon Proyek routes
+Project Receipts routes
 
 Dashboard: https://briannaufal211.github.io/bon-proyek-dashboard/
 Receipt operator: https://briannaufal211.github.io/bon-proyek-dashboard/unggah/

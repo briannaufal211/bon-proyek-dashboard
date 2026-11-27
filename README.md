@@ -1,87 +1,85 @@
 # Project Cost Monitoring & Invoice Reconciliation Automation
 
-[Studi kasus lengkap](https://briannaufal211.github.io/personal-portfolio/project-cost-monitoring.html) · [Laporan manajerial PDF](https://briannaufal211.github.io/personal-portfolio/assets/project-cost/Laporan-Manajerial.pdf) · [Panduan Excel PDF](https://briannaufal211.github.io/personal-portfolio/assets/project-cost/Panduan-Excel.pdf)
+[Case study](https://briannaufal211.github.io/personal-portfolio/project-cost-monitoring.html) · [Interactive demo](https://briannaufal211.github.io/personal-portfolio/assets/project-cost/demo/) · [Video walkthrough](https://briannaufal211.github.io/personal-portfolio/project-cost-monitoring.html#demo) · [Management report](https://briannaufal211.github.io/personal-portfolio/assets/project-cost/Management-Report.pdf) · [Excel and Power Query guide](https://briannaufal211.github.io/personal-portfolio/assets/project-cost/Excel-Power-Query-Guide.pdf)
 
-[Demo dashboard tanpa login](https://briannaufal211.github.io/personal-portfolio/assets/project-cost/demo/) · [Video dengan narasi bahasa Inggris](https://briannaufal211.github.io/personal-portfolio/project-cost-monitoring.html#demo) · [Bukti visual Power Query](https://briannaufal211.github.io/personal-portfolio/project-cost-monitoring.html#power-query)
+## Executive summary
 
-Demo publik memakai transaksi fiktif. Coba konfirmasi bon Rp48.000 dan catat pembayaran contoh untuk melihat perubahan status INV-DEMO-06.
+The Finance Director needed an earlier view of project costs while field receipts and payment records were still being collected. This independent portfolio project uses public data and simulated transactions to show how Finance can capture receipts, compare invoices with payments, and investigate discrepancies from one dashboard.
 
-## Ringkasan eksekutif
+## Business problem and objectives
 
-Project Cost Monitoring & Invoice Reconciliation Automation adalah studi kasus independen untuk membantu Finance melihat tagihan, pembayaran, dan selisih dalam satu alur. Proyek terinspirasi kebutuhan bisnis yang dibahas dalam interview; bukan implementasi resmi perusahaan atau penggunaan data internal perusahaan. Dashboard dan aplikasi unggah bon sudah online. Data publik diperkaya untuk konteks biaya konstruksi.
+Periodic recaps delayed the director’s view of recorded project costs. Finance also had to trace installments and payments covering multiple invoices. The project automates repeatable imports and matching, makes exceptions visible, and gives management a way to review recorded costs by project and category.
 
-## Masalah dan tujuan
+## Data and assumptions
 
-Rekap periodik menyulitkan manajemen melihat pengeluaran yang baru terjadi. Membandingkan setiap transaksi secara manual juga menyulitkan penelusuran pembayaran cicilan dan pembayaran beberapa tagihan sekaligus. Tujuan proyek: mengulang proses impor dan pembersihan secara konsisten, mencocokkan tagihan dengan pembayaran, menampilkan pengecualian, serta mempercepat akses ke informasi yang sudah dicatat. Proyek belum mengukur penghematan waktu operasional perusahaan.
+The starting point was TheAgentCompany’s public Finance Invoice Matching task, with 500 invoices and 486 payment records. Invoice IDs and payment relationships came from that source. Project codes, construction cost categories, descriptions, quantities, unit costs, and IDR amounts were added for the simulation. The public CORD receipt example is a separate input used to test receipt capture.
 
-## Data dan pengayaan
+## My contribution and AI assistance
 
-Sumber awal adalah Finance Invoice Matching dari TheAgentCompany: 500 tagihan dan 486 pembayaran. Pola ID dan hubungan pembayaran berasal dari sumber publik. Kategori konstruksi, proyek A/B/C, deskripsi pembelian, kuantitas, satuan, harga IDR, serta nominal yang disesuaikan adalah pengayaan untuk studi kasus. Angka tersebut bukan kurs konversi atau bukti transaksi perusahaan. Foto struk contoh berasal dari CORD, NAVER CLOVA, berlisensi CC BY 4.0; pengguna memeriksa total sebelum menyimpannya. CORD tidak menyediakan pasangan pembayaran untuk seluruh invoice dataset.
+I defined the reporting and receipt requirements, built and tested the Excel matching workflow with guidance, checked the results after changing source records, and tested receipt uploads. AI assisted with application code, interface design, debugging, tests, deployment, and documentation. I used an existing OCR engine and kept human review before saving an invoice.
 
-## Kontribusi dan bantuan AI
+## Excel imports and preparation
 
-Brian Naufal mengerjakan tahapan Excel dengan panduan, menguji perubahan sumber melalui Refresh, meninjau hasil pencocokan, mencoba unggah bon, dan menentukan kebutuhan aplikasi serta dashboard. AI membantu penyusunan kode Python/JavaScript, desain, debugging, pengujian, dan dokumentasi. Proyek tidak mengklaim bahwa seluruh kode ditulis mandiri atau model OCR dilatih dari awal. Keputusan penting: pembayaran dipisahkan dari tagihan, hasil OCR harus dikonfirmasi, dan pembayaran gabungan dihitung sekali.
+The monitoring workbook imports the invoice and payment workbooks using saved Power Query steps. IDs are text, invoice dates have the Date type, and amounts are numeric. Trim removes unwanted spaces. Staging queries can remain connection-only. Reference creates a query that follows its parent output, while Duplicate copies the steps into a separate query.
 
-## Tahap Excel: impor dan pembersihan
+## Direct, installment, and combined payment matching
 
-Di Monitoring Rekonsiliasi, Power Query membaca file invoices.xlsx dan payments-uji.xlsx melalui langkah Source. Tipe ID ditetapkan sebagai teks, tanggal sebagai tanggal, dan Amount sebagai angka. Trim membersihkan spasi awal/akhir referensi. Query sumber disimpan sebagai connection only; query laporan dimuat ke tabel. Reference membuat query turunan yang mengikuti hasil query sebelumnya. Duplicate menyalin rangkaian langkah sebagai query terpisah.
+Direct matching joins Invoice_ID to Reference. Installment matching strips the Partial and Remaining markers, groups payment rows by invoice, and compares their sum with the invoice. Combined matching splits references into individual invoice IDs, joins each ID to its invoice amount, then groups by Payment_ID so the payment is counted once.
 
-## Tahap Excel: tiga pola pencocokan
+## Reconciliation table and controls
 
-Langsung: Merge Invoice_ID dengan Reference untuk satu tagihan dan satu pembayaran. Cicilan: bersihkan penanda Partial/Remaining, Group By per invoice, jumlahkan pembayaran, lalu Merge dengan nominal tagihan. Gabungan: pecah Reference menjadi baris invoice, ambil nominal tagihan melalui Merge, lalu Group By pada Payment_ID. Nominal pembayaran gabungan diambil sekali per pembayaran, tidak dijumlahkan ulang setelah pemecahan referensi. Selisih = tagihan dikurangi pembayaran.
+The three query outputs are aligned to the same columns and appended to Hasil_Rekonsiliasi. A direct or installment case uses the invoice ID. A combined case uses the payment ID and retains the linked invoice list. The PivotTable counts cases by type and status. Finance can verify the totals, inspect unmatched records, and refresh the source after saving changes.
 
-## Tahap Excel: laporan dan kontrol
+## Online architecture
 
-Samakan nama kolom menjadi ID_Kasus, Nominal_Tagihan, Nominal_Bayar, Selisih, Status, Jenis, dan Daftar_Tagihan. Append menyatukan ketiga laporan. ID_Kasus memakai invoice untuk langsung/cicilan dan payment untuk gabungan. PivotTable menghitung kasus per status dan jenis; jumlah kasus tidak sama dengan jumlah invoice. Setelah sumber disimpan, Refresh All menjalankan ulang query; PivotTable mungkin perlu Refresh setelah query selesai. Periksa total, ID ganda, referensi tanpa pasangan, dan kelengkapan invoice sebelum menggunakan hasil.
+The receipt app runs Tesseract.js in the browser. The operator reviews the total and transaction details before confirming. The server assigns the next invoice ID, writes the invoice to Google Sheets, and stores the photo privately in Supabase. Finance records the payment separately using its invoice reference. A Supabase function calculates reconciliation from the source sheets, and GitHub Pages serves the dashboard.
 
-## Alur online dan peran setiap alat
+## Refresh behavior
 
-Foto bon → OCR Tesseract.js di browser → pemeriksaan pengguna → konfirmasi simpan → Google Sheets Tagihan dan foto privat di Supabase. Pembayaran dicatat terpisah pada Google Sheets Pembayaran dengan Reference yang menunjuk invoice. Fungsi server Supabase membaca kedua sumber, menghitung hubungan rekonsiliasi, lalu mengirim hasil ke dashboard HTML/CSS/JavaScript di GitHub Pages. Monitoring Google Sheets menyediakan konteks kategori/keterangan. GitHub Pages menayangkan tampilan; fungsi server dijalankan Supabase.
+The online dashboard checks for updates approximately every 15 seconds while open. A short server cache and network response times affect when changes appear. The desktop Excel workbook refreshes when the user runs Refresh All, and the Google Sheets sources are maintained separately from local Excel files.
 
-## Arti live dan perbedaan dengan Excel
+## Verified snapshot on November 26, 2026
 
-Dashboard memeriksa data setiap sekitar 15 detik selama halaman terbuka; server menggunakan cache singkat dan pembaruan tetap bergantung jaringan serta respons Google Sheets. Ini polling, bukan jaminan pembaruan seketika. Excel lokal tidak otomatis tersinkron dengan Google Sheets. Power Query yang diimpor ke Sheets tidak berubah menjadi mesin query online. Hasil rekonsiliasi online dihitung server dan tidak otomatis ditulis kembali ke tab Monitoring Sheets.
+At 10:13 p.m. Jakarta time, the dashboard showed 502 invoices and 452 cases. Of these, 432 matched, 19 had an amount difference, one had no payment recorded, and zero had a reference issue. Billed costs were IDR 3,250,455,000 and recorded payments were IDR 3,248,896,000. The IDR 1,559,000 aggregate difference combines several types of open items and requires transaction-level review.
 
-## Snapshot hasil: 26 November 2026
+## Receipt example and recorded outcome
 
-Pemeriksaan pukul 22.13 WIB: 502 tagihan, 452 kasus, 432 Cocok, 19 Beda nominal, 1 Belum ada pembayaran, dan 0 Periksa referensi. Total tagihan Rp3.250.455.000; pembayaran tercatat Rp3.248.896.000. Selisih agregat keduanya Rp1.559.000 mencakup tagihan tanpa pembayaran dan perbedaan positif/negatif; angka ini bukan bukti kerugian, fraud, atau saldo utang yang telah diaudit. Angka dashboard dapat berubah ketika sumber diperbarui.
+The public CORD food receipt shows a grand total of IDR 48,000, cash tendered of IDR 50,000, and change of IDR 2,000. The saved example, INV0501, recorded IDR 48,000 for Project A and appeared with no recorded payment in the dated snapshot. The separate interactive portfolio demo uses INV-DEMO-06 and lets visitors simulate a matching payment.
 
-## Contoh transaksi yang dapat ditelusuri
+## How a Finance Director uses the dashboard
 
-**CORD** adalah kumpulan foto struk toko dan restoran di Indonesia yang dipublikasikan oleh NAVER CLOVA untuk riset. Foto struk dilengkapi penanda untuk bagian seperti nama barang, pajak, dan total. Proyek ini mengambil satu foto struk bakso bihun dari koleksi tersebut sebagai contoh uji. [Dataset CORD](https://github.com/clovaai/cord) · [Foto struk contoh](https://briannaufal211.github.io/bon-proyek-dashboard/unggah/sample.jpg)
+Open the dashboard, check the last successful refresh, and select the project, invoice date range, and category. Read billed costs, recorded payments, and exceptions. Look at the trend and the largest categories. Select Needs follow-up and use an invoice ID to review the case with Finance before drawing a conclusion.
 
-Saat operator memilih **Gunakan contoh CORD**, aplikasi online membaca tulisan pada foto dengan **Tesseract.js**. Proses ini disebut **OCR**. Aplikasi mengusulkan **Rp48.000** dari baris *Grand Total* sebagai nominal tagihan. Angka tunai Rp50.000 adalah uang yang diserahkan ke kasir, sedangkan Rp2.000 adalah kembalian. Operator memeriksa hasilnya sebelum menyimpan.
+## How filters affect the totals
 
-Pengguna telah menyimpannya sebagai INV0501 dengan keterangan konsumsi tim Proyek A dan kategori Lainnya. Pembacaan terbaru menemukan invoice Rp48.000 dan status Belum ada pembayaran. Ini berarti belum ditemukan catatan pembayaran dalam sumber, bukan bukti bahwa barang belum dibayar. Jika pembayaran sebenarnya telah dilakukan, operator mencatat Payment_ID unik, tanggal, Amount, dan Reference INV0501 setelah memeriksa bukti.
+Date filters use the invoice date. A combined payment can relate to invoices in more than one selected or unselected project, category, or period. The case list can show a payment that overlaps the filters. The payment card only includes cases whose linked invoices all fall within the selection. Search narrows the case table while the summary cards continue to reflect the report filters.
 
-## Cara direktur memakai dashboard
+## How Finance handles exceptions
 
-1. Buka tautan dashboard dan masuk menggunakan kode yang diberikan privat. 2. Periksa indikator koneksi dan waktu Data diperiksa. 3. Pilih proyek, kategori, dan rentang tanggal tagihan. 4. Baca nominal tagihan, pembayaran tercatat, Perlu diperiksa, dan Belum ada pembayaran. 5. Lihat tren dan kategori terbesar. 6. Pada daftar, pilih Perlu tindak lanjut lalu cari ID invoice. 7. Minta Finance memeriksa bukti dan memperbaiki sumber bila ada kesalahan. 8. Tunggu pembaruan dan pastikan status serta nominal sesuai. Reset filter mengembalikan cakupan laporan.
+Matched means the references and amounts satisfy the matching rules. An amount difference is invoice value minus recorded payment. Positive values indicate a smaller recorded payment, while negative values indicate a larger one. No payment recorded calls for checking the payment source and reference. Check reference calls for tracing missing or invalid invoice IDs before editing the source.
 
-## Cara membaca filter dan angka
+## Management follow-up priorities
 
-Tanggal filter mengikuti tanggal tagihan, bukan tanggal arus kas bank. Satu kasus gabungan dapat mencakup invoice lintas kategori/proyek/periode. Daftar dapat menampilkan kasus yang bersinggungan dengan filter, sedangkan kartu pembayaran hanya menghitung kasus yang seluruh invoice-nya termasuk cakupan filter. Perhatikan catatan Pembayaran lintas filter hanya tampil di daftar. Grafik kategori tetap memberikan konteks kategori pada proyek/periode yang dipilih. Pencarian menyaring daftar kasus, bukan seluruh kartu ringkasan.
+At the recorded snapshot, subcontracted work was the largest billed category at IDR 1,192,145,000, followed by equipment rental at IDR 428,580,000. In the example case INV0003, billed costs of IDR 2,900,000 and a recorded payment of IDR 1,732,000 left a difference of IDR 1,168,000. Finance should review the payment evidence, record the reason and owner, and confirm the status following any source correction.
 
-## Arti status dan tindak lanjut
+## Verification
 
-Cocok: referensi dan nominal sesuai aturan; bukan persetujuan keabsahan pembelian. Beda nominal: bandingkan bukti invoice dan pembayaran, termasuk diskon, pajak, cicilan, biaya atau salah input. Selisih positif berarti tagihan lebih besar; negatif berarti pembayaran lebih besar. Belum ada pembayaran: cek apakah pembayaran belum dicatat, belum dilakukan, atau salah referensi. Periksa referensi: telusuri ID yang tidak ditemukan atau hubungan sumber yang bermasalah. Jangan mengubah angka hanya agar status menjadi Cocok.
+The public demo was tested from receipt confirmation to a recorded payment. The status of INV-DEMO-06 changed from No payment recorded to Matched with an IDR 0 difference. Other checks covered three payment patterns, pending cases, duplicate-save protection, shared sessions, and dashboard refresh. The CORD sample produced the expected IDR 48,000, with human confirmation required before saving.
 
-## Prioritas tindak lanjut manajemen
+## Scope and limitations
 
-Snapshot menunjukkan subkontrak pekerjaan Rp1.192.145.000 sebagai kategori tagihan terbesar, diikuti sewa alat Rp428.580.000. Ini menunjukkan area yang layak ditinjau volumenya, bukan pemborosan. Contoh INV0003: tagihan Rp2.900.000, pembayaran Rp1.732.000, selisih Rp1.168.000. Finance perlu memeriksa apakah pembayaran parsial, salah input, atau ada dokumen pendukung lain. Operator memeriksa INV0501 yang belum punya catatan pembayaran. Penanggung jawab dan tenggat dapat dikelola dalam daftar tindak lanjut terpisah; fitur penugasan belum tersedia di aplikasi.
+The prototype relies on timely source entry and human review of OCR output. Recorded payment status reflects the sheet. Bank transfer execution, approval, official accounting, budget variance, and fuel anomalies are outside the current scope. The shared access code is for this prototype. A broader rollout would benefit from separate operator and management accounts, a tracked review queue, and an agreed refresh and completeness target.
 
-## Bukti pengujian dan batas kesimpulan
+## Tools
 
-Pada 26 November 2026, pengujian otomatis lokal lulus untuk rekonsiliasi terhadap fixture, parsing total, validasi, pencegahan simpan ganda untuk ID unggahan yang sama, pemulihan simpan yang belum pasti, akses sesi, kedaluwarsa, dan logout. Fixture dashboard berisi 501 invoice/451 kasus, berbeda dari snapshot online terbaru 502/452. Pembacaan Google Sheets dan tampilan dashboard terbaru sesuai. Uji OCR contoh membaca Rp48.000; hasil satu contoh tidak menunjukkan akurasi semua jenis bon. Tidak ada invoice baru yang dibuat oleh pemeriksaan dokumentasi ini.
+Excel and Power Query build the desktop reconciliation. Google Sheets holds the online source records. HTML, CSS, and JavaScript deliver the interfaces. Tesseract.js reads sample receipt photos. Supabase handles authenticated data access and private photo storage. GitHub Pages hosts the web front end.
 
-## Batas proyek dan pengembangan berikutnya
+## What is CORD?
 
-OCR tetap perlu verifikasi manusia. Tanggal, proyek, kategori, dan keterangan memerlukan input atau pemeriksaan operator. Sistem tidak menjalankan transfer bank, persetujuan pengeluaran, pembukuan resmi, atau deteksi fraud. Belum ada anggaran versus aktual, komitmen pembelian, kontrol BBM berbasis volume/jam alat, maupun pengukuran SLA H+1. Kode pengelola dan dashboard saat ini sama sesuai pilihan pemilik; ini bukan pemisahan peran. Akses privat perlu diberikan terbatas. Pengembangan berikutnya: akun/peran terpisah, pencatatan keputusan review, uji banyak jenis bon, dan anggaran proyek.
+CORD is a public research collection of Indonesian store and restaurant receipt images. NAVER CLOVA provides annotations for fields such as item names, tax, and totals. This project uses a food receipt from that collection to demonstrate how Tesseract.js reads text from a photo and how an operator verifies the proposed total before saving. IDR 48,000 is the purchase total. IDR 50,000 is cash tendered and IDR 2,000 is the change.
 
-## Tools dan komponen
+## Sources and live applications
 
-Excel dan Power Query: pengolahan awal, rekonsiliasi, kontrol, PivotTable. Google Sheets: sumber online. HTML/CSS/JavaScript: dashboard dan aplikasi. Tesseract.js: OCR versi online. Supabase: fungsi server, sesi akses, ledger unggahan, penyimpanan foto privat. GitHub Pages: hosting tampilan. Python dan PP-OCRv5 digunakan pada prototipe lokal sebelumnya; bukan mesin OCR browser yang sekarang dipublikasikan.
-
-## Sumber dan tautan
-
-Portfolio: https://briannaufal211.github.io/personal-portfolio/project-cost-monitoring.html | Dashboard: https://briannaufal211.github.io/bon-proyek-dashboard/ | Unggah bon: https://briannaufal211.github.io/bon-proyek-dashboard/unggah/ | Repository: https://github.com/briannaufal211/bon-proyek-dashboard | Finance Invoice Matching: https://github.com/TheAgentCompany/TheAgentCompany/tree/main/workspaces/tasks/finance-invoice-matching | CORD: https://github.com/clovaai/cord | Lisensi CORD: https://creativecommons.org/licenses/by/4.0/
+- [Finance Invoice Matching source](https://github.com/TheAgentCompany/TheAgentCompany/tree/main/workspaces/tasks/finance-invoice-matching)
+- [CORD by NAVER CLOVA](https://github.com/clovaai/cord) and its [CC BY 4.0 license](https://creativecommons.org/licenses/by/4.0/)
+- [Finance dashboard](https://briannaufal211.github.io/bon-proyek-dashboard/) and [receipt upload app](https://briannaufal211.github.io/bon-proyek-dashboard/unggah/), available to authorized users
